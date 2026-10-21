@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "BeeMart.WebClient/1.0.0": {
+        "runtime": {
+          "BeeMart.WebClient.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "BeeMart.WebClient/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

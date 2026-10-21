@@ -1,0 +1,68 @@
+@page
+@model BeeMart.WebClient.Pages.RegisterModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register Akun</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+               background: #e3f2fd; font-family: Calibri, "Segoe UI", Arial, sans-serif; }
+        .card { background: #fff; width: 100%; max-width: 360px; box-sizing: border-box; padding: 20px;
+                border-top: 4px solid #2196f3; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+        h2 { margin: 6px 0 20px; text-align: center; color: #1976d2; font-size: 24px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #333; }
+        input, select { width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 14px;
+                        border: 1px solid #90caf9; border-radius: 6px; font-size: 14px; background: #fff; }
+        button { width: 100%; padding: 10px; border: 0; border-radius: 6px; background: #2196f3;
+                 color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .link { display: block; margin-top: 14px; text-align: center; font-weight: bold; color: #2196f3; text-decoration: none; }
+        .error { color: #d32f2f; font-size: 13px; margin: -8px 0 12px; display: block; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Register Akun</h2>
+
+        <form method="post">
+            <label asp-for="Input.Username">Username</label>
+            <input asp-for="Input.Username" />
+            <span asp-validation-for="Input.Username" class="error"></span>
+
+            <label asp-for="Input.FullName">Full Name</label>
+            <input asp-for="Input.FullName" />
+            <span asp-validation-for="Input.FullName" class="error"></span>
+
+            <label asp-for="Input.Password">Password</label>
+            <input asp-for="Input.Password" />
+            <span asp-validation-for="Input.Password" class="error"></span>
+
+            <label asp-for="Input.ConfirmPassword">Re-Password</label>
+            <input asp-for="Input.ConfirmPassword" />
+            <span asp-validation-for="Input.ConfirmPassword" class="error"></span>
+
+            <label asp-for="Input.Role">Role</label>
+            <select asp-for="Input.Role">
+                <option value="Admin">Admin</option>
+                <option value="Cashier">Kasir</option>
+            </select>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <span class="error">@Model.ErrorMessage</span>
+            }
+
+            <button type="submit">Daftar</button>
+        </form>
+
+        <a class="link" asp-page="/Login">Sudah punya akun? Login</a>
+    </div>
+</body>
+</html>

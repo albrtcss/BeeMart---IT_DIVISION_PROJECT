@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "HRSGVmErtmf8ior9X4b4ydiQDsp+UnGgpeOnTvSIisg=",
+  "Source": "BeeMart.Api",
+  "BasePath": "_content/BeeMart.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

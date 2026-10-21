@@ -1,0 +1,113 @@
+@page
+@model BeeMart.WebClient.Pages.TransactionHistoryModel
+@using System.Globalization
+
+@{
+    Layout = null;
+    var currency = CultureInfo.GetCultureInfo("id-ID");
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>History Transaction</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+        body { margin: 0; background: #e3f2fd; font-family: Calibri, "Segoe UI", Arial, sans-serif; color: #333; }
+        .topbar { background: #2196f3; color: #fff; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar b { font-size: 20px; }
+        .topbar .role { color: #ffeb3b; font-weight: bold; }
+        .topbar form { display: inline; margin: 0 0 0 14px; }
+        .topbar button { background: #f44336; color: #fff; border: 0; border-radius: 6px; padding: 8px 16px; font-weight: bold; cursor: pointer; }
+        .box { background: #fff; max-width: 1000px; margin: 16px auto; padding: 14px; border: 1px solid #ddd; border-radius: 10px; }
+        .tabs { border-bottom: 2px solid #2196f3; margin-bottom: 14px; }
+        .tabs a { display: inline-block; padding: 10px 18px; margin-right: 6px; background: #bbdefb; color: #1976d2; font-weight: bold; text-decoration: none; border-radius: 6px 6px 0 0; }
+        .tabs a.active { background: #2196f3; color: #fff; }
+        .hint { font-style: italic; margin-bottom: 8px; }
+        .hint b { color: #1976d2; }
+        .filter { display: flex; align-items: center; gap: 10px; }
+        .filter input, .filter select { padding: 8px; border: 1px solid #90caf9; border-radius: 6px; }
+        .filter button { background: #2196f3; color: #fff; border: 0; border-radius: 6px; padding: 9px 16px; font-weight: bold; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+        th { background: #bbdefb; color: #1976d2; text-align: left; padding: 10px; }
+        td { padding: 10px; border: 1px solid #bbdefb; font-size: 14px; }
+        .error { color: #d32f2f; font-weight: bold; margin: 8px 0; }
+        .pages { text-align: center; }
+        .pages a { display: inline-block; min-width: 28px; padding: 6px 8px; margin: 0 2px; border-radius: 4px; background: #bbdefb; color: #1976d2; font-weight: bold; text-decoration: none; }
+        .pages a.current { background: #2196f3; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <b>BeeMart</b>
+        <div>
+            Role: <span class="role">@Model.RoleName</span> | Login: @Model.Username
+            <form method="post" asp-page="/Logout"><button type="submit">Logout</button></form>
+        </div>
+    </div>
+
+    <div class="box">
+        <div class="tabs">
+            <a asp-page="/NewTransaction">New Transaction</a><a class="active" asp-page="/TransactionHistory">History Transaction</a>
+        </div>
+
+        <div class="hint">
+            Pencarian Data Transaksi
+            <b>@Model.FilterLabel</b>
+        </div>
+
+        <form method="get" class="filter">
+            <b>Pilih Tanggal:</b>
+            <input type="date" name="date" value="@Model.SelectedDate" required />
+            @if (Model.IsAdmin)
+            {
+                <b>Kasir:</b>
+                <select name="cashierId">
+                    <option value="">All Cashier</option>
+                    @foreach (var c in Model.Cashiers)
+                    {
+                        <option value="@c.IdUser" selected="@(c.IdUser == Model.SelectedCashierId)">@c.FullName</option>
+                    }
+                </select>
+            }
+            <button type="submit">Cari Data</button>
+        </form>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <div class="error">@Model.ErrorMessage</div>
+        }
+
+        <table>
+            <thead>
+                <tr><th>No. Transaksi</th><th>Tanggal &amp; Jam</th><th>Kasir</th><th>Jml Item</th><th>Pembayaran</th><th>Total Harga</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Transactions)
+                {
+                    <tr>
+                        <td>@item.InvoiceNo</td>
+                        <td>@item.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@item.CashierName</td>
+                        <td>@item.TotalItems</td>
+                        <td>@item.PaymentMethod</td>
+                        <td>@item.TotalPrice.ToString("C0", currency)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (Model.TotalPages > 0)
+        {
+            <div class="pages">
+                @for (var i = 1; i <= Model.TotalPages; i++)
+                {
+                    <a href="@Model.BuildPageUrl(i)" class="@(i == Model.PageNumber ? "current" : "")">@i</a>
+                }
+            </div>
+        }
+    </div>
+</body>
+</html>

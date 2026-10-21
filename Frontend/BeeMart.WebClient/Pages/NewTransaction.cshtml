@@ -1,0 +1,199 @@
+@page
+@model BeeMart.WebClient.Pages.NewTransactionModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Transaction</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+        body { margin: 0; background: #e3f2fd; font-family: Calibri, "Segoe UI", Arial, sans-serif; color: #333; }
+        .topbar { background: #2196f3; color: #fff; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar b { font-size: 20px; }
+        .topbar form { display: inline; margin: 0 0 0 14px; }
+        .topbar button { background: #f44336; color: #fff; border: 0; border-radius: 6px; padding: 8px 16px; font-weight: bold; cursor: pointer; }
+        .box { background: #fff; max-width: 1000px; margin: 16px auto; padding: 14px; border: 1px solid #ddd; border-radius: 10px; }
+        .tabs { border-bottom: 2px solid #2196f3; margin-bottom: 14px; }
+        .tabs a { display: inline-block; padding: 10px 18px; margin-right: 6px; background: #bbdefb; color: #1976d2; font-weight: bold; text-decoration: none; border-radius: 6px 6px 0 0; }
+        .tabs a.active { background: #2196f3; color: #fff; }
+        .invoice { background: #bbdefb; padding: 10px; border-radius: 6px; margin-bottom: 14px; }
+        .invoice span { font-family: Consolas, monospace; font-size: 15px; }
+        input[type=text], input[type=number], select { padding: 8px; border: 1px solid #90caf9; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
+        #search { width: 100%; }
+        h3 { margin: 18px 0 8px; padding-bottom: 6px; border-bottom: 1px solid #e0e0e0; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th { background: #bbdefb; color: #1976d2; text-align: left; padding: 10px; }
+        td { padding: 10px; border: 1px solid #bbdefb; font-size: 14px; }
+        .btn-sm { border: 0; border-radius: 4px; color: #fff; padding: 4px 14px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .pick { background: #2196f3; }
+        .del { background: #f44336; }
+        .picked { background: #e3f2fd; border: 1px solid #90caf9; border-radius: 6px; padding: 12px; margin: 12px 0; }
+        .picked h4 { margin: 0 0 8px; color: #1976d2; }
+        .picked button { background: #2196f3; color: #fff; border: 0; border-radius: 6px; padding: 9px 16px; font-weight: bold; cursor: pointer; }
+        .error { color: #d32f2f; font-weight: bold; margin-top: 8px; }
+        .total { text-align: right; font-size: 24px; font-weight: bold; color: #1976d2; margin: 14px 0; }
+        .pay { text-align: right; margin-bottom: 14px; }
+        .pay select { width: 160px; font-size: 14px; padding: 9px; }
+        #submit { width: 100%; padding: 14px; border: 0; border-radius: 6px; background: #2196f3; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <b>BeeMart</b>
+        <div>
+            <span id="clock"></span> | Kasir: @User.Identity?.Name
+            <form method="post" asp-page="/Logout"><button type="submit">Logout</button></form>
+        </div>
+    </div>
+
+    <div class="box">
+        <div class="tabs">
+            <a class="active" asp-page="/NewTransaction">New Transaction</a><a asp-page="/TransactionHistory">History Transaction</a>
+        </div>
+
+        <form id="trx" method="post" onsubmit="return false">
+            <div class="invoice"><b>Invoice No:</b> <span id="invoice">@Model.InvoiceNo</span></div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+            {
+                <div class="error">@Model.ErrorMessage</div>
+            }
+
+            <div>Cari Barang (Ketik: Apel / Susu, lalu tekan Enter)</div>
+            <input type="text" id="search" placeholder="Ketik nama barang..." />
+
+            <table id="results" class="hidden">
+                <thead><tr><th>Nama Barang</th><th>Berat</th><th>Stock</th><th>Harga</th><th>Diskon</th><th>Aksi</th></tr></thead>
+                <tbody></tbody>
+            </table>
+
+            <div id="picked" class="picked hidden">
+                <h4>Barang Terpilih: <span id="pName"></span></h4>
+                Harga Satuan: <b id="pPrice"></b> &nbsp; Sisa Stock: <b id="pStock"></b> &nbsp;
+                Qty: <input type="number" id="qty" min="1" value="1" style="width:70px" />
+                <button type="button" id="addBtn">Masukkan ke Keranjang</button>
+                <div id="pError" class="error"></div>
+            </div>
+
+            <h3>Daftar Belanjaan</h3>
+            <table>
+                <thead><tr><th>Nama Barang</th><th>Harga</th><th>Diskon</th><th>Qty</th><th>Subtotal</th><th>Aksi</th></tr></thead>
+                <tbody id="cart"></tbody>
+            </table>
+
+            <div class="total">Total: <span id="total">Rp 0</span></div>
+
+            <div class="pay">
+                <b>Metode Pembayaran:</b>
+                <select id="payment">
+                    @foreach (var method in Model.PaymentMethods)
+                    {
+                        <option value="@method.IdPaymentMethod">@method.MethodName</option>
+                    }
+                </select>
+            </div>
+
+            <div id="submitError" class="error"></div>
+            <button type="button" id="submit">Submit Transaksi</button>
+            @Html.AntiForgeryToken()
+        </form>
+    </div>
+
+    <script>
+        (function () {
+            var $ = function (id) { return document.getElementById(id); };
+            var rp = function (n) { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); };
+            var esc = function (t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
+            var cart = [], picked = null;
+
+            setInterval(function () { $('clock').textContent = new Date().toLocaleString('id-ID'); }, 1000);
+
+            function renderCart() {
+                var total = 0;
+                $('cart').innerHTML = cart.map(function (c, i) {
+                    var sub = c.price * c.qty * (1 - c.discount / 100);
+                    total += sub;
+                    return '<tr><td>' + esc(c.name) + '</td><td>' + rp(c.price) + '</td><td>' + c.discount + '%</td><td>' +
+                        c.qty + '</td><td>' + rp(sub) + '</td><td><button type="button" class="btn-sm del" data-i="' + i + '">Hapus</button></td></tr>';
+                }).join('');
+                $('total').textContent = rp(total);
+            }
+
+            $('cart').addEventListener('click', function (e) {
+                if (e.target.dataset.i !== undefined) { cart.splice(+e.target.dataset.i, 1); renderCart(); }
+            });
+
+            $('search').addEventListener('keydown', async function (e) {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                var q = this.value.trim();
+                $('picked').classList.add('hidden');
+                if (!q) { $('results').classList.add('hidden'); return; }
+                var res = await fetch('?handler=Search&q=' + encodeURIComponent(q));
+                var items = res.ok ? await res.json() : [];
+                $('results').querySelector('tbody').innerHTML = items.map(function (p, i) {
+                    return '<tr><td>' + esc(p.name) + '</td><td>' + p.weight + ' Kg</td><td>' + p.stock + '</td><td>' + rp(p.price) +
+                        '</td><td>' + p.discount + '%</td><td><button type="button" class="btn-sm pick" data-i="' + i + '">Pilih</button></td></tr>';
+                }).join('');
+                $('results').classList.toggle('hidden', items.length === 0);
+                $('results')._items = items;
+            });
+
+            $('results').addEventListener('click', function (e) {
+                if (e.target.dataset.i === undefined) return;
+                picked = $('results')._items[+e.target.dataset.i];
+                $('pName').textContent = picked.name;
+                $('pPrice').textContent = rp(picked.price);
+                $('pStock').textContent = picked.stock;
+                $('qty').value = 1;
+                $('pError').textContent = '';
+                $('picked').classList.remove('hidden');
+            });
+
+            $('addBtn').addEventListener('click', function () {
+                var qty = parseInt($('qty').value, 10);
+                if (!(qty > 0)) { $('pError').textContent = 'Qty harus lebih dari nol.'; return; }
+                var existing = cart.find(function (c) { return c.id === picked.idProduct; });
+                if (qty + (existing ? existing.qty : 0) > picked.stock) {
+                    $('pError').textContent = 'Jumlah barang yang dimasukkan melebihi sisa stok.';
+                    return;
+                }
+                if (existing) existing.qty += qty;
+                else cart.push({ id: picked.idProduct, name: picked.name, price: picked.price, discount: picked.discount, qty: qty });
+                renderCart();
+                $('picked').classList.add('hidden');
+            });
+
+            $('submit').addEventListener('click', async function () {
+                $('submitError').textContent = '';
+                var res = await fetch('?handler=Submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name=__RequestVerificationToken]').value
+                    },
+                    body: JSON.stringify({
+                        idPaymentMethod: +$('payment').value,
+                        items: cart.map(function (c) { return { idProduct: c.id, qty: c.qty }; })
+                    })
+                });
+                var data = await res.json().catch(function () { return {}; });
+                if (!res.ok) { $('submitError').textContent = data.message || 'Transaksi gagal disimpan.'; return; }
+                cart = []; picked = null;
+                renderCart();
+                $('invoice').textContent = data.invoiceNo;
+                $('search').value = '';
+                $('results').classList.add('hidden');
+                $('picked').classList.add('hidden');
+            });
+        })();
+    </script>
+</body>
+</html>
